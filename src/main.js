@@ -4,55 +4,60 @@ import { Pane } from "tweakpane";
 import { addPlanetyMesh } from "./utils/addPlanetyMesh";
 import { applyPlanetaryRotation } from "./utils";
 
-const SUN_SIZE = 500;
-const DISTANCE_BETWEEN_SUN_AND_EARTH = SUN_SIZE + 1000;
+// Constants for sizes, distances, and speeds
+
+const SUN_SIZE = 500; // all planet sizes are relative to this value
+const DISTANCE_BETWEEN_SUN_AND_EARTH = SUN_SIZE * 3; // all planet distances are relative to this value
+
+// Earth's rotation and revolution speeds are used as reference for other planets
+// I used angular velocity to maintain a relative velocity to Earth.
 const EARTH_REVOLUTION_SPEED = 0.000172;
 const EARTH_ROTATION_SPEED = 0.02625;
 
-const mercuryToSunSizeRatio = 0.0035 * SUN_SIZE;
+const mercuryToSunRelativeSize = 0.0035 * SUN_SIZE;
 const mercuryToSunDistance = 0.387 * DISTANCE_BETWEEN_SUN_AND_EARTH;
 const mercuryRotationSpeed = 0.017 * EARTH_ROTATION_SPEED;
 const mercuryRevolutionSpeed = 4.15 * EARTH_REVOLUTION_SPEED;
 
-const venusToSunSizeRatio = 0.0087 * SUN_SIZE;
+const venusToSunRelativeSize = 0.0087 * SUN_SIZE;
 const venusToSunDistance = 0.723 * DISTANCE_BETWEEN_SUN_AND_EARTH;
 const venusRotationSpeed = 0.004 * EARTH_ROTATION_SPEED;
 const venusRevolutionSpeed = 1.63 * EARTH_REVOLUTION_SPEED;
 
-const earthToSunSizeRatio = 0.009 * SUN_SIZE;
+const earthToSunRelativeSize = 0.009 * SUN_SIZE;
 const earthToSunDistance = 1 * DISTANCE_BETWEEN_SUN_AND_EARTH;
 const earthRotationSpeed = 1 * EARTH_ROTATION_SPEED;
 const earthRevolutionSpeed = 1 * EARTH_REVOLUTION_SPEED;
 
-const moonToEarthSizeRatio = 0.27 * earthToSunSizeRatio;
-const moonToEarthDistance = 0.00257 * DISTANCE_BETWEEN_SUN_AND_EARTH;
+const moonToEarthRelativeSize = 0.27 * earthToSunRelativeSize;
+const moonToEarthDistance = 5 * earthToSunRelativeSize;
 const moonRotationSpeed = 0.0366 * EARTH_ROTATION_SPEED;
 const moonRevolutionSpeed = 13.36 * EARTH_REVOLUTION_SPEED;
 
-const marsToSunSizeRatio = 0.0047 * SUN_SIZE;
+const marsToSunRelativeSize = 0.0047 * SUN_SIZE;
 const marsToSunDistance = 1.524 * DISTANCE_BETWEEN_SUN_AND_EARTH;
 const marsRotationSpeed = 0.972 * EARTH_ROTATION_SPEED;
 const marsRevolutionSpeed = 0.53 * EARTH_REVOLUTION_SPEED;
 
-const jupiterToSunSizeRatio = 0.099 * SUN_SIZE;
+const jupiterToSunRelativeSize = 0.099 * SUN_SIZE;
 const jupiterToSunDistance = 5.203 * DISTANCE_BETWEEN_SUN_AND_EARTH;
 const jupiterRotationSpeed = 2.411 * EARTH_ROTATION_SPEED;
 const jupiterRevolutionSpeed = 0.08 * EARTH_REVOLUTION_SPEED;
 
-const saturnToSunSizeRatio = 0.083 * SUN_SIZE;
+const saturnToSunRelativeSize = 0.083 * SUN_SIZE;
 const saturnToSunDistance = 9.537 * DISTANCE_BETWEEN_SUN_AND_EARTH;
 const saturnRotationSpeed = 2.246 * EARTH_ROTATION_SPEED;
 const saturnRevolutionSpeed = 0.03 * EARTH_REVOLUTION_SPEED;
 
-const saturnRingInnerRadius = saturnToSunSizeRatio * 1.8;
-const saturnRingOuterRadius = saturnToSunSizeRatio * 2.3;
+const saturnRingInnerRadius = saturnToSunRelativeSize * 1.8;
+const saturnRingOuterRadius = saturnToSunRelativeSize * 2.3;
 
-const uranusToSunSizeRatio = 0.036 * SUN_SIZE;
+const uranusToSunRelativeSize = 0.036 * SUN_SIZE;
 const uranusToSunDistance = 19.191 * DISTANCE_BETWEEN_SUN_AND_EARTH;
 const uranusRotationSpeed = 1.388 * EARTH_ROTATION_SPEED;
 const uranusRevolutionSpeed = 0.01 * EARTH_REVOLUTION_SPEED;
 
-const neptuneToSunSizeRatio = 0.035 * SUN_SIZE;
+const neptuneToSunRelativeSize = 0.035 * SUN_SIZE;
 const neptuneToSunDistance = 30.07 * DISTANCE_BETWEEN_SUN_AND_EARTH;
 const neptuneRotationSpeed = 1.486 * EARTH_ROTATION_SPEED;
 const neptuneRevolutionSpeed = 0.006 * EARTH_REVOLUTION_SPEED;
@@ -81,6 +86,7 @@ const backgroundCubeMap = cubeTextureLoader.load([
 ]);
 
 scene.background = backgroundCubeMap;
+scene.backgroundBlurriness = 0.05;
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
 scene.add(ambientLight);
@@ -115,7 +121,7 @@ sunMaterial.map = sunTexture;
 // MERCURY
 
 const mercuryInfo = addPlanetyMesh(
-  mercuryToSunSizeRatio,
+  mercuryToSunRelativeSize,
   { color: "gray" },
   {
     parentGroup: sunGroup,
@@ -131,7 +137,7 @@ mercuryInfo.material.map = mercuryTexture;
 // VENUS
 
 const venusInfo = addPlanetyMesh(
-  venusToSunSizeRatio,
+  venusToSunRelativeSize,
   { color: "gray" },
   {
     parentGroup: sunGroup,
@@ -148,7 +154,7 @@ venusInfo.isClockwiseRotation = true;
 // EARTH
 
 const earthInfo = addPlanetyMesh(
-  earthToSunSizeRatio,
+  earthToSunRelativeSize,
   { color: "gray" },
   {
     parentGroup: sunGroup,
@@ -159,17 +165,19 @@ const earthInfo = addPlanetyMesh(
 earthInfo.rotationSpeed = earthRotationSpeed;
 earthInfo.revolutionSpeed = earthRevolutionSpeed;
 
+earthInfo.mesh.rotation.z = THREE.MathUtils.degToRad(23.5);
+
 const earthTexture = textureLoader.load("/textures/earth.jpg");
 earthInfo.material.map = earthTexture;
 
 const earthMoonGeometry = new THREE.SphereGeometry(
-  moonToEarthSizeRatio,
+  moonToEarthRelativeSize,
   32,
   32,
 );
 const earthMoonMaterial = new THREE.MeshStandardMaterial({ color: "gray" });
 const earthMoonMesh = new THREE.Mesh(earthMoonGeometry, earthMoonMaterial);
-earthMoonMesh.position.set(moonToEarthDistance * 5, 0, 0);
+earthMoonMesh.position.set(moonToEarthDistance, 0, 0);
 const earthMoonMeshGroup = new THREE.Group();
 earthMoonMeshGroup.add(earthMoonMesh);
 earthMoonMeshGroup.rotation.x = Math.PI / 35;
@@ -182,7 +190,7 @@ earthMoonMaterial.map = moonTexture;
 // MARS
 
 const marsInfo = addPlanetyMesh(
-  marsToSunSizeRatio,
+  marsToSunRelativeSize,
   { color: "gray" },
   {
     parentGroup: sunGroup,
@@ -194,7 +202,7 @@ marsInfo.revolutionSpeed = marsRevolutionSpeed;
 marsInfo.moons = [
   {
     name: "Phobos",
-    size: 0.33 * marsToSunSizeRatio,
+    size: 0.33 * marsToSunRelativeSize,
     distanceRatio: 0.00015,
     rotationSpeed: 0.01,
     revolutionSpeed: 0.01,
@@ -207,7 +215,7 @@ marsInfo.material.map = marsTexture;
 // JUPITER
 
 const jupiterInfo = addPlanetyMesh(
-  jupiterToSunSizeRatio,
+  jupiterToSunRelativeSize,
   { color: "gray" },
   {
     parentGroup: sunGroup,
@@ -223,7 +231,7 @@ jupiterInfo.material.map = jupiterTexture;
 // SATURN
 
 const saturnInfo = addPlanetyMesh(
-  saturnToSunSizeRatio,
+  saturnToSunRelativeSize,
   { color: "gray" },
   {
     parentGroup: sunGroup,
@@ -256,7 +264,7 @@ saturnInfo.material.map = saturnTexture;
 // URANUS
 
 const uranusInfo = addPlanetyMesh(
-  uranusToSunSizeRatio,
+  uranusToSunRelativeSize,
   { color: "gray" },
   {
     parentGroup: sunGroup,
@@ -273,7 +281,7 @@ uranusInfo.isClockwiseRotation = true;
 // NEPTUNE
 
 const neptuneInfo = addPlanetyMesh(
-  neptuneToSunSizeRatio,
+  neptuneToSunRelativeSize,
   { color: "gray" },
   {
     parentGroup: sunGroup,
@@ -301,8 +309,6 @@ planetsArray.forEach((planetInfo) => {
   planetInfo.planetGroup
     ? planetInfo.planetGroup.scale.setScalar(5)
     : planetInfo.mesh.scale.setScalar(5);
-
-  // planetInfo.material.emissive.set(0x333333);
 });
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
