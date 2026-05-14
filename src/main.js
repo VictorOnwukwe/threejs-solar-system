@@ -3,6 +3,10 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Pane } from "tweakpane";
 import { addPlanetyMesh } from "./utils/addPlanetyMesh";
 import { applyPlanetaryRotation } from "./utils";
+import { inject } from '@vercel/analytics';
+
+// Initialize Vercel Analytics
+inject();
 
 // Constants for sizes, distances, and speeds
 
